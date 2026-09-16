@@ -1,3 +1,5 @@
+use super::paths::config_dir;
+
 use serde::Deserialize;
 use std::{fs, path::PathBuf};
 
@@ -13,20 +15,19 @@ struct PresetsFile {
 }
 
 pub fn presets_path() -> PathBuf {
-    // Updated to match actual config location
-    glib::user_config_dir().join("night-light/presets.toml")
+    config_dir().join("night-light/presets.toml")
 }
 
 pub fn load_presets() -> Vec<Preset> {
-    let p = presets_path();
-    if let Ok(s) = fs::read_to_string(&p) {
-        if let Ok(parsed) = toml::from_str::<PresetsFile>(&s) {
-            if !parsed.presets.is_empty() {
-                return parsed.presets;
-            }
-        }
-    }
-    // defaults
+    fs::read_to_string(presets_path())
+        .ok()
+        .and_then(|contents| toml::from_str::<PresetsFile>(&contents).ok())
+        .map(|file| file.presets)
+        .filter(|presets| !presets.is_empty())
+        .unwrap_or_else(default_presets)
+}
+
+fn default_presets() -> Vec<Preset> {
     [
         ("1K", 1000),
         ("1.5K", 1500),
@@ -42,9 +43,9 @@ pub fn load_presets() -> Vec<Preset> {
         ("6.5K", 6500),
     ]
     .into_iter()
-    .map(|(l, v)| Preset {
-        label: l.into(),
-        value: v,
+    .map(|(label, value)| Preset {
+        label: label.into(),
+        value,
     })
     .collect()
 }

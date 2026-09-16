@@ -5,28 +5,26 @@ use crate::app::core::{config::load_current_temp, presets::Preset, redshift::app
 #[derive(Debug)]
 pub struct NightLightTray {
     presets: Vec<Preset>,
-    selected: usize,
+    selected: Option<usize>,
 }
 
 impl NightLightTray {
     pub fn new(presets: Vec<Preset>) -> Self {
-        let selected = load_current_temp()
-            .and_then(|current| presets.iter().position(|preset| preset.value == current))
-            .unwrap_or(0);
-
+        let selected = selected_index(&presets);
         Self { presets, selected }
     }
 
     fn sync_selection(&mut self) {
-        if let Some(current) = load_current_temp()
-            && let Some(index) = self
-                .presets
-                .iter()
-                .position(|preset| preset.value == current)
-        {
-            self.selected = index;
-        }
+        self.selected = selected_index(&self.presets);
     }
+}
+
+fn selected_index(presets: &[Preset]) -> Option<usize> {
+    load_current_temp().and_then(|current| {
+        presets
+            .iter()
+            .position(|preset| preset.value == current)
+    })
 }
 
 impl ksni::Tray for NightLightTray {
@@ -56,15 +54,17 @@ impl ksni::Tray for NightLightTray {
 
         vec![
             RadioGroup {
-                selected: self.selected,
+                selected: self.selected.unwrap_or(self.presets.len()),
                 options,
                 select: Box::new(|tray: &mut Self, index| {
-                    let Some(preset) = tray.presets.get(index) else {
+                    let Some(value) = tray.presets.get(index).map(|preset| preset.value) else {
                         return;
                     };
 
-                    apply_temperature(preset.value).unwrap();
-                    tray.selected = index;
+                    match apply_temperature(value) {
+                        Ok(()) => tray.selected = Some(index),
+                        Err(error) => eprintln!("failed to apply temperature {value}: {error}"),
+                    }
                 }),
             }
             .into(),
