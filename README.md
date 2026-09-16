@@ -1,67 +1,68 @@
 # Night Light Dialog Tool
 
-A GTK4-based tool for managing and switching temperature settings using customizable presets.
+A small Rust tray application for switching Redshift color-temperature presets.
 
 ## Features
-- View and edit Redshift configuration files.
-- Manage temperature presets.
-- GTK4-based UI.
+
+- Native StatusNotifierItem integration for Linux desktop panels.
+- The same preset menu opens from both left-click and right-click on the tray icon.
+- Radio-style temperature presets loaded from `~/.config/nighlight/presets.toml`.
+- The selected preset is synchronized from the current Redshift configuration when the menu opens.
+- No standalone GTK window or manual window positioning.
 
 ## Dependencies
+
 - Rust
-- GTK4
-- glib
 - Redshift
+- A desktop environment / panel with StatusNotifierItem support (for example XFCE Status Tray)
 
-## Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/night-light-diag.git
-   cd night-light-diag
-   ```
-2. Build the project using Cargo:
-   ```bash
-   cargo build --release
-   ```
-3. Run the application:
-   ```bash
-   ./target/release/night-light-diag
-   ```
-
-## Usage
-
-### Redshift Configuration
-The Redshift configuration file is automatically created at `~/.config/redshift/config`.
-
-[Redshift Configuration Example](examples/redshift_config)
-
-### Presets Configuration
-The presets configuration file is located at `~/.config/nighlight/presets.toml`. If the file does not exist, the application will use the following default presets:
-
-- "2K" = 2000
-- "2.5K" = 2500
-- "3K" = 3000
-- "3.5K" = 3500
-- "4K" = 4000
-- "4.5K" = 4500
-- "5K" = 5000
-- "5.5K" = 5500
-- "6K" = 6000
-- "6.5K" = 6500
-
-[Presets Configuration Example](examples/presets.toml)
-
-### Wrapper Script
-A wrapper script is provided to launch the application from a panel. The script assumes the project is located at:
+## Build
 
 ```bash
-BIN="${BIN:-$HOME/Projects/night-light-dialog/target/release/night-light-dialog}"
+cargo build --release
 ```
 
-You should customize the `BIN` variable in the script to point to the correct path of the built binary.
+Run the tray service directly:
 
-[Wrapper Script Example](examples/wrapper.sh)
+```bash
+./target/release/night-light-dialog
+```
 
-## Screenshots
+The tray icon uses the symbolic `weather-clear-night-symbolic` icon from the current desktop icon theme.
 
-![Night Light Diagnostic Tool](docs/screenshots/1.png)
+## Presets
+
+The presets configuration file is located at:
+
+```text
+~/.config/nighlight/presets.toml
+```
+
+If it does not exist or contains no presets, the application uses these defaults:
+
+- 2K = 2000 K
+- 2.5K = 2500 K
+- 3K = 3000 K
+- 3.5K = 3500 K
+- 4K = 4000 K
+- 4.5K = 4500 K
+- 5K = 5000 K
+- 5.5K = 5500 K
+- 6K = 6000 K
+- 6.5K = 6500 K
+
+See `examples/presets.toml` for an example configuration.
+
+## Redshift configuration
+
+The selected temperature is stored in:
+
+```text
+~/.config/redshift/config
+```
+
+Selecting a preset updates the config and reapplies Redshift.
+
+## Migration note
+
+The previous GTK window launcher/wrapper is no longer required by the application itself. Keep the existing local wrapper and XFCE launcher in place until the tray implementation has been tested successfully on the target desktop. After validation, remove the old wrapper/launcher and configure the tray binary to start with the XFCE session.
