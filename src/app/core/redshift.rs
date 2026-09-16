@@ -1,19 +1,37 @@
 use super::config::{load_current_temp, write_temp_atomic};
-use std::process::Command;
-use which::which;
 
-pub fn apply_temperature(val: u32) {
+use std::{io, process::Command};
+
+pub fn apply_temperature(val: u32) -> io::Result<()> {
     if load_current_temp() == Some(val) {
-        return;
+        return Ok(());
     }
-    if let Err(e) = write_temp_atomic(val) {
-        eprintln!("write_temp failed: {e}");
-        return;
+
+    run_redshift(&["-x"])?;
+
+    let value = val.to_string();
+    run_redshift(&["-O", &value])?;
+
+    write_temp_atomic(val)?;
+
+    Ok(())
+}
+
+fn run_redshift(args: &[&str]) -> io::Result<()> {
+    let output = Command::new("redshift").args(args).output()?;
+
+    if output.status.success() {
+        return Ok(());
     }
-    if which("redshift").is_ok() {
-        let _ = Command::new("redshift").arg("-x").status();
-        let _ = Command::new("redshift")
-            .args(["-O", &val.to_string()])
-            .status();
-    }
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let stderr = stderr.trim();
+
+    let message = if stderr.is_empty() {
+        format!("redshift {args:?} exited with {}", output.status)
+    } else {
+        format!("redshift {args:?} failed: {stderr}")
+    };
+
+    Err(io::Error::other(message))
 }

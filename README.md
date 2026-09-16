@@ -1,67 +1,53 @@
-# Night Light Dialog Tool
+# Night Light
 
-A GTK4-based tool for managing and switching temperature settings using customizable presets.
+Minimal Linux tray controller for switching Redshift color temperature.
 
-## Features
-- View and edit Redshift configuration files.
-- Manage temperature presets.
-- GTK4-based UI.
+![Night Light](docs/screenshots/1.png)
 
-## Dependencies
-- Rust
-- GTK4
-- glib
-- Redshift
+## Requirements
+
+- Linux desktop with StatusNotifierItem tray support
+- [Redshift](https://github.com/jonls/redshift)
+- Rust toolchain
 
 ## Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/night-light-diag.git
-   cd night-light-diag
-   ```
-2. Build the project using Cargo:
-   ```bash
-   cargo build --release
-   ```
-3. Run the application:
-   ```bash
-   ./target/release/night-light-diag
-   ```
-
-## Usage
-
-### Redshift Configuration
-The Redshift configuration file is automatically created at `~/.config/redshift/config`.
-
-[Redshift Configuration Example](examples/redshift_config)
-
-### Presets Configuration
-The presets configuration file is located at `~/.config/nighlight/presets.toml`. If the file does not exist, the application will use the following default presets:
-
-- "2K" = 2000
-- "2.5K" = 2500
-- "3K" = 3000
-- "3.5K" = 3500
-- "4K" = 4000
-- "4.5K" = 4500
-- "5K" = 5000
-- "5.5K" = 5500
-- "6K" = 6000
-- "6.5K" = 6500
-
-[Presets Configuration Example](examples/presets.toml)
-
-### Wrapper Script
-A wrapper script is provided to launch the application from a panel. The script assumes the project is located at:
 
 ```bash
-BIN="${BIN:-$HOME/Projects/night-light-dialog/target/release/night-light-dialog}"
+git clone https://github.com/slava-nikulin/night-light-dialog.git
+cd night-light-dialog
+cargo install --path .
 ```
 
-You should customize the `BIN` variable in the script to point to the correct path of the built binary.
+The executable is installed to `~/.cargo/bin/night-light-dialog` by default.
 
-[Wrapper Script Example](examples/wrapper.sh)
+## Autostart
 
-## Screenshots
+Create:
 
-![Night Light Diagnostic Tool](docs/screenshots/1.png)
+```text
+~/.config/autostart/night-light-dialog.desktop
+```
+
+with:
+
+```ini
+[Desktop Entry]
+Type=Application
+Name=Night Light
+Exec=/home/USERNAME/.cargo/bin/night-light-dialog
+Terminal=false
+StartupNotify=false
+OnlyShowIn=XFCE;
+```
+
+Replace `USERNAME` with your Linux username.
+
+## Presets
+
+Optional custom presets can be placed at:
+
+```text
+~/.config/night-light/presets.toml
+```
+
+See [`examples/presets.toml`](examples/presets.toml). Without it, built-in presets are used.
