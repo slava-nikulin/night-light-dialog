@@ -1,10 +1,6 @@
 use ksni::menu::{RadioGroup, RadioItem};
 
-use crate::app::core::{
-    config::load_current_temp,
-    presets::Preset,
-    redshift::apply_temperature,
-};
+use crate::app::core::{config::load_current_temp, presets::Preset, redshift::apply_temperature};
 
 #[derive(Debug)]
 pub struct NightLightTray {
@@ -58,19 +54,21 @@ impl ksni::Tray for NightLightTray {
             })
             .collect();
 
-        vec![RadioGroup {
-            selected: self.selected,
-            options,
-            select: Box::new(|tray: &mut Self, index| {
-                let Some(preset) = tray.presets.get(index) else {
-                    return;
-                };
+        vec![
+            RadioGroup {
+                selected: self.selected,
+                options,
+                select: Box::new(|tray: &mut Self, index| {
+                    let Some(preset) = tray.presets.get(index) else {
+                        return;
+                    };
 
-                apply_temperature(preset.value);
-                tray.selected = index;
-            }),
-        }
-        .into()]
+                    apply_temperature(preset.value).unwrap();
+                    tray.selected = index;
+                }),
+            }
+            .into(),
+        ]
     }
 
     fn menu_about_to_show(&mut self) {

@@ -14,7 +14,7 @@ struct PresetsFile {
 
 pub fn presets_path() -> PathBuf {
     // Updated to match actual config location
-    glib::user_config_dir().join("nighlight/presets.toml")
+    glib::user_config_dir().join("night-light/presets.toml")
 }
 
 pub fn load_presets() -> Vec<Preset> {
@@ -28,6 +28,8 @@ pub fn load_presets() -> Vec<Preset> {
     }
     // defaults
     [
+        ("1K", 1000),
+        ("1.5K", 1500),
         ("2K", 2000),
         ("2.5K", 2500),
         ("3K", 3000),
