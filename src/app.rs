@@ -1,20 +1,16 @@
 pub mod core;
-pub mod ui;
+pub mod tray;
+
+use ksni::blocking::TrayMethods;
 
 use core::presets::load_presets;
-use gtk4::Application;
-use gtk4::prelude::*;
-use ui::window::WindowBuilder;
+use tray::NightLightTray;
 
 pub fn run() {
-    let app = Application::builder()
-        .application_id("org.example.NightLightDiagGTK4")
-        .build();
+    let tray = NightLightTray::new(load_presets());
+    let _handle = tray.spawn().expect("failed to start system tray service");
 
-    app.connect_activate(|app| {
-        let presets = load_presets();
-        WindowBuilder { app, presets }.build();
-    });
-
-    app.run();
+    loop {
+        std::thread::park();
+    }
 }
